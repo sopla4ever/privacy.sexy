@@ -3,6 +3,8 @@ import { ICategory } from './ICategory';
 import { IScript } from './IScript';
 import { IApplication } from './IApplication';
 import { IProjectInformation } from './IProjectInformation';
+import { OperatingSystem } from './OperatingSystem';
+import { IScriptingDefinition } from './IScriptingDefinition';
 
 export class Application implements IApplication {
     public get totalScripts(): number { return this.flattened.allScripts.length; }
@@ -11,12 +13,18 @@ export class Application implements IApplication {
     private readonly flattened: IFlattenedApplication;
 
     constructor(
+        public readonly os: OperatingSystem,
         public readonly info: IProjectInformation,
-        public readonly actions: ReadonlyArray<ICategory>) {
+        public readonly actions: ReadonlyArray<ICategory>,
+        public readonly scripting: IScriptingDefinition) {
         if (!info) {
-            throw new Error('info is undefined');
+            throw new Error('undefined info');
+        }
+        if (!scripting) {
+            throw new Error('undefined scripting definition');
         }
         this.flattened = flatten(actions);
+        ensureValidOs(os);
         ensureValid(this.flattened);
         ensureNoDuplicates(this.flattened.allCategories);
         ensureNoDuplicates(this.flattened.allScripts);
@@ -43,13 +51,19 @@ export class Application implements IApplication {
     }
 }
 
+function ensureValidOs(os: OperatingSystem): void {
+    if (os === OperatingSystem.Unknown) {
+        throw new Error('unknown os');
+    }
+}
+
 function ensureNoDuplicates<TKey>(entities: ReadonlyArray<IEntity<TKey>>) {
-    const totalOccurencesById = new Map<TKey, number>();
+    const totalOccurrencesById = new Map<TKey, number>();
     for (const entity of entities) {
-        totalOccurencesById.set(entity.id, (totalOccurencesById.get(entity.id) || 0) + 1);
+        totalOccurrencesById.set(entity.id, (totalOccurrencesById.get(entity.id) || 0) + 1);
     }
     const duplicatedIds = new Array<TKey>();
-    totalOccurencesById.forEach((index, id) => {
+    totalOccurrencesById.forEach((index, id) => {
         if (index > 1) {
             duplicatedIds.push(id);
         }

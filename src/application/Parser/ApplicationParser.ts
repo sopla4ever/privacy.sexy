@@ -1,36 +1,32 @@
 import { Category } from '@/domain/Category';
 import { Application } from '@/domain/Application';
 import { IApplication } from '@/domain/IApplication';
-import { IProjectInformation } from '@/domain/IProjectInformation';
-import { ApplicationYaml } from 'js-yaml-loader!./../application.yaml';
+import { YamlApplication } from 'js-yaml-loader!./../application.yaml';
 import { parseCategory } from './CategoryParser';
-import { ProjectInformation } from '../../domain/ProjectInformation';
+import { OperatingSystem } from '@/domain/OperatingSystem';
+import { parseScriptingDefinition } from './ScriptingDefinitionParser';
+import { parseProjectInformation } from './ProjectInformationParser';
 
-
-export function parseApplication(content: ApplicationYaml, env: NodeJS.ProcessEnv = process.env): IApplication {
+export function parseApplication(
+    content: YamlApplication): IApplication {
     validate(content);
     const categories = new Array<Category>();
     for (const action of content.actions) {
         const category = parseCategory(action);
         categories.push(category);
     }
-    const info = readAppInformation(env);
+    const os = OperatingSystem[content.os as keyof typeof OperatingSystem];
+    const info = parseProjectInformation(process.env);
+    const scripting = parseScriptingDefinition(content.scripting, info);
     const app = new Application(
+        os,
         info,
-        categories);
+        categories,
+        scripting);
     return app;
 }
 
-function readAppInformation(environment): IProjectInformation {
-    return new ProjectInformation(
-        environment.VUE_APP_NAME,
-        environment.VUE_APP_VERSION,
-        environment.VUE_APP_REPOSITORY_URL,
-        environment.VUE_APP_HOMEPAGE_URL,
-    );
-}
-
-function validate(content: ApplicationYaml): void {
+function validate(content: YamlApplication): void {
     if (!content) {
         throw new Error('application is null or undefined');
     }

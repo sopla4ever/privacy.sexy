@@ -3,25 +3,34 @@ declare module 'js-yaml-loader!*' {
     export type DocumentationUrls = ReadonlyArray<string> | string;
 
     export interface YamlDocumentable {
-        docs?: DocumentationUrls;
+        readonly docs?: DocumentationUrls;
     }
 
     export interface YamlScript extends YamlDocumentable {
-        name: string;
-        code: string;
-        revertCode: string;
-        recommend: boolean;
+        readonly name: string;
+        readonly code: string;
+        readonly revertCode: string;
+        readonly recommend: boolean;
     }
 
     export interface YamlCategory extends YamlDocumentable {
-        children: ReadonlyArray<CategoryOrScript>;
-        category: string;
+        readonly children: ReadonlyArray<CategoryOrScript>;
+        readonly category: string;
     }
 
-    export interface ApplicationYaml {
-        actions: ReadonlyArray<YamlCategory>;
+    export interface YamlScriptingDefinition {
+        language: string;
+        fileExtension: string;
+        startCode: string;
+        endCode: string;
     }
 
-    const content: ApplicationYaml;
+    export interface YamlApplication {
+        readonly os: string;
+        readonly scripting: YamlScriptingDefinition;
+        readonly actions: ReadonlyArray<YamlCategory>;
+    }
+
+    const content: YamlApplication;
     export default content;
 }
