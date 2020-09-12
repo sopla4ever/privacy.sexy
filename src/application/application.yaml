@@ -185,7 +185,7 @@ actions:
                                 name: Clear all Firefox user profiles, settings and data 
                                 recommend: false
                                 code: |-
-                                    rd "%localappdata%\Local\Mozilla\Firefox\Profiles"
+                                    rd /s /q "%LOCALAPPDATA%\Mozilla\Firefox\Profiles"
                                     rd /s /q "%APPDATA%\Mozilla\Firefox\Profiles"
                     -
                         name: Clear Opera traces
@@ -2625,11 +2625,16 @@ actions:
                                         revertCode: PowerShell -ExecutionPolicy Unrestricted -Command "& {$manifest = (Get-AppxPackage "ActiproSoftwareLLC.562882FEEB491").InstallLocation + '\AppxManifest.xml'; Add-AppxPackage -DisableDevelopmentMode -Register $manifest}"
                     -
                         category: System apps
+                        # System apps are non-removable, fails with 0x80070032. We change their folder name to make them unfunctional instead
                         children:
                             -
                                 name: File Picker app
-                                code: PowerShell -Command "Get-AppxPackage "1527c705-839a-4832-9118-54d4Bd6a0c89" | Remove-AppxPackage"
-                                revertCode: PowerShell -ExecutionPolicy Unrestricted -Command "& {$manifest = (Get-AppxPackage "1527c705-839a-4832-9118-54d4Bd6a0c89").InstallLocation + '\AppxManifest.xml'; Add-AppxPackage -DisableDevelopmentMode -Register $manifest}"
+                                code: PowerShell -Command "$package=Get-AppxPackage 'Windows.CBSPreview';if (!$package) { Write-Info 'Already uninstalled'; exit 1 };$folder=(Get-AppxPackage 'Windows.CBSPreview').InstallLocation;Rename-Item \"$folder\" \"$folder.BACKUP\""                              
+                                revertCode: >
+                                    PowerShell -Command "$package=Get-AppxPackage 'Windows.CBSPreview';if (!$package) { Write-Error 'Cannot reinstall: no local package'; exit 1 };$folder=\"$env:SYSTEMROOT\SystemApps\$($package.PackageFamilyName)\";if ( Test-Path \"$folder.BACKUP\" ) { Rename-Item \"$folder.BACKUP\" \"$folder\"; Write-Info 'Successfuly restored'; } if ( Test-Path \"$folder\") { Add-AppxPackage -DisableDevelopmentMode -Register \"$folder\AppxManifest.xml\"; } else { Write-Error 'Could not restore, not deleted by privacy.sexy?'; exit 1 }"
+
+                            PowerShell -Command "Get-AppxPackage "1527c705-839a-4832-9118-54d4Bd6a0c89" | Remove-AppxPackage"
+
                             -
                                 name: File Explorer app
                                 code: PowerShell -Command "Get-AppxPackage "c5e2524a-ea46-4f67-841f-6a9465d9d515" | Remove-AppxPackage"
