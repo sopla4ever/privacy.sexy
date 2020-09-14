@@ -2629,12 +2629,26 @@ actions:
                         children:
                             -
                                 name: File Picker app
-                                code: PowerShell -Command "$package=Get-AppxPackage 'Windows.CBSPreview';if (!$package) { Write-Info 'Already uninstalled'; exit 1 };$folder=(Get-AppxPackage 'Windows.CBSPreview').InstallLocation;Rename-Item \"$folder\" \"$folder.BACKUP\""                              
+                                code: >
+                                    PowerShell -Command "
+                                        $package=Get-AppxPackage '1527c705-839a-4832-9118-54d4Bd6a0c89';
+                                        if (!$package) { Write-Info 'Not installed'; exit 0 };
+                                        $appDir=$package.InstallLocation;
+                                        Rename-Item \"$appDir\" \"$appDir.BACKUP\";
+                                        $userDir="$env:LOCALAPPDATA\Packages\$($package.PackageFamilyName)";
+                                        if(Test-Path -Path $userDir) { Rename-Item \"$userDir\" \"$userDir.BACKUP\" }
+                                    "
                                 revertCode: >
-                                    PowerShell -Command "$package=Get-AppxPackage 'Windows.CBSPreview';if (!$package) { Write-Error 'Cannot reinstall: no local package'; exit 1 };$folder=\"$env:SYSTEMROOT\SystemApps\$($package.PackageFamilyName)\";if ( Test-Path \"$folder.BACKUP\" ) { Rename-Item \"$folder.BACKUP\" \"$folder\"; Write-Info 'Successfuly restored'; } if ( Test-Path \"$folder\") { Add-AppxPackage -DisableDevelopmentMode -Register \"$folder\AppxManifest.xml\"; } else { Write-Error 'Could not restore, not deleted by privacy.sexy?'; exit 1 }"
-
-                            PowerShell -Command "Get-AppxPackage "1527c705-839a-4832-9118-54d4Bd6a0c89" | Remove-AppxPackage"
-
+                                    PowerShell -Command "
+                                        $package=Get-AppxPackage '1527c705-839a-4832-9118-54d4Bd6a0c89';
+                                        if (!$package) { Write-Error 'Error: no local package'; exit 1 };
+                                        $appDir=\"$env:SYSTEMROOT\SystemApps\$($package.PackageFamilyName)\";
+                                        if ( Test-Path \"$appDir.BACKUP\" ) { Rename-Item \"$appDir.BACKUP\" \"$appDir\"; Write-Info \"Restored $appDir\"; }
+                                        $userDir="$env:LOCALAPPDATA\Packages\$($package.PackageFamilyName)";
+                                        if ( Test-Path \"$userDir.BACKUP\" ) { Rename-Item \"$userDir.BACKUP\" \"$userDir\"; Write-Info 'Restored $userDir'; }
+                                        if ( Test-Path \"$appDir\") { Add-AppxPackage -DisableDevelopmentMode -Register \"$appDir\AppxManifest.xml\"; 
+                                          else { Write-Error 'Could not restore, not deleted by privacy.sexy?'; exit 1 }
+                                    "
                             -
                                 name: File Explorer app
                                 code: PowerShell -Command "Get-AppxPackage "c5e2524a-ea46-4f67-841f-6a9465d9d515" | Remove-AppxPackage"
