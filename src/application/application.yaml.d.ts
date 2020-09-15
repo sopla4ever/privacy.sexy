@@ -6,10 +6,25 @@ declare module 'js-yaml-loader!*' {
         docs?: DocumentationUrls;
     }
 
-    export interface YamlScript extends YamlDocumentable {
+    export interface YamlFunction {
         name: string;
+        parameters: readonly string[];
         code: string;
         revertCode: string;
+    }
+    interface ICallDictionary {
+        [index:string]: string;
+    }
+    export interface YamlCall {
+        function: string;
+        parameters: readonly ICallDictionary[];
+    }
+
+    export interface YamlScript extends YamlDocumentable {
+        name: string;
+        code: string | undefined;
+        revertCode: string | undefined;
+        call: readonly YamlCall[] | YamlCall | undefined;
         recommend: boolean;
     }
 
@@ -22,6 +37,7 @@ declare module 'js-yaml-loader!*' {
         name: string;
         repositoryUrl: string;
         actions: ReadonlyArray<YamlCategory>;
+        functions: ReadonlyArray<YamlFunction> | undefined;
     }
 
     const content: ApplicationYaml;

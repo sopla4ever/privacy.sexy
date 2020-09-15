@@ -3,12 +3,14 @@ import { Application } from '@/domain/Application';
 import { IApplication } from '@/domain/IApplication';
 import { ApplicationYaml } from 'js-yaml-loader!./../application.yaml';
 import { parseCategory } from './CategoryParser';
+import { ScriptCompiler } from './Function/ScriptCompiler';
 
 export function parseApplication(content: ApplicationYaml): IApplication {
     validate(content);
+    const compiler = new ScriptCompiler(content.functions);
     const categories = new Array<Category>();
     for (const action of content.actions) {
-        const category = parseCategory(action);
+        const category = parseCategory(action, compiler);
         categories.push(category);
     }
     const app = new Application(

@@ -43,11 +43,11 @@ function isScriptAMatch(script: IScript, filterLowercase: string) {
     if (script.name.toLowerCase().includes(filterLowercase)) {
         return true;
     }
-    if (script.code.toLowerCase().includes(filterLowercase)) {
+    if (script.code.execute.toLowerCase().includes(filterLowercase)) {
         return true;
     }
-    if (script.revertCode) {
-        return script.revertCode.toLowerCase().includes(filterLowercase);
+    if (script.code.revert) {
+        return script.code.revert.toLowerCase().includes(filterLowercase);
     }
     return false;
 }
