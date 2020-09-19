@@ -3,9 +3,13 @@
       <div class="wrapper">
           <TheHeader class="row" />
           <TheSearchBar class="row" />
-          <TheScripts class="row"/>
-          <TheCodeArea class="row" theme="xcode" />
-          <TheCodeButtons class="row code-buttons" />
+          <div class="scripts-area">
+            <TheScripts class="row"/>
+            <div class="code-area">
+              <TheCodeArea class="row" theme="xcode" />
+              <TheCodeButtons class="row code-buttons" />
+            </div>
+          </div>
           <TheFooter />
       </div>
    </div>
@@ -65,6 +69,11 @@ body {
 
     .row {
       margin-bottom: 10px;
+    }
+
+    .code-area {
+      display:flex;
+      flex-direction: column;
     }
 
     .code-buttons {
